@@ -176,12 +176,12 @@ if __name__ == '__main__':
   std = torch.tensor([58.395, 57.12, 57.375]).float()[:, None, None]
   rgb = torch.from_numpy(rgb.transpose((2, 0, 1))).float()
   rgb = torch.div((rgb - mean), std)
-  rgb = rgb[None, :, :, :].cuda()
+  rgb = rgb[None, :, :, :].cpu()
 
   ###################### canonical camera space ######################
   # inference
   model = torch.hub.load('yvanyin/metric3d', 'metric3d_vit_small', pretrain=True)
-  model.cuda().eval()
+  model.cpu().eval()
   with torch.no_grad():
     pred_depth, confidence, output_dict = model.inference({'input': rgb})
 
@@ -203,7 +203,7 @@ if __name__ == '__main__':
   if depth_file is not None:
     gt_depth = cv2.imread(depth_file, -1)
     gt_depth = gt_depth / gt_depth_scale
-    gt_depth = torch.from_numpy(gt_depth).float().cuda()
+    gt_depth = torch.from_numpy(gt_depth).float().cpu()
     assert gt_depth.shape == pred_depth.shape
     
     mask = (gt_depth > 1e-8)

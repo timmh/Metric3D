@@ -36,7 +36,7 @@ class AdabinsLoss(nn.Module):
         target_points = target_depth_maps.flatten(1)  # n, hwc
         #mask = target_points.ge(1e-3)  # only valid ground truth points
         target_points = [p[m] for p, m in zip(target_depth_maps, mask)]
-        target_lengths = torch.Tensor([len(t) for t in target_points], dtype=torch.long, device="cuda")
+        target_lengths = torch.Tensor([len(t) for t in target_points], dtype=torch.long, device="cpu")
         target_points = pad_sequence(target_points, batch_first=True).unsqueeze(2)  # .shape = n, T, 1
 
         loss, _ = chamfer_distance(x=input_points, y=target_points, y_lengths=target_lengths)

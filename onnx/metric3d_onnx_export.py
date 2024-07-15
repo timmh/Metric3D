@@ -14,10 +14,10 @@ class Metric3DExportModel(torch.nn.Module):
         super().__init__()
         self.meta_arch = meta_arch
         self.register_buffer(
-            "rgb_mean", torch.tensor([123.675, 116.28, 103.53]).view(1, 3, 1, 1).cuda()
+            "rgb_mean", torch.tensor([123.675, 116.28, 103.53]).view(1, 3, 1, 1).cpu()
         )
         self.register_buffer(
-            "rgb_std", torch.tensor([58.395, 57.12, 57.375]).view(1, 3, 1, 1).cuda()
+            "rgb_std", torch.tensor([58.395, 57.12, 57.375]).view(1, 3, 1, 1).cpu()
         )
         self.input_size = (616, 1064)
 
@@ -86,20 +86,21 @@ def update_vit_sampling(model):
 
 def main(model_name="metric3d_vit_small", modify_upsample=False):
     model = torch.hub.load("yvanyin/metric3d", model_name, pretrain=True)
-    model.cuda().eval()
+    model.cpu().eval()
+    model.eval()
 
     if modify_upsample:
         model = update_vit_sampling(model)
 
     B = 1
     if "vit" in model_name:
-        dummy_image = torch.randn([B, 3, 616, 1064]).cuda()
+        dummy_image = torch.randn([B, 3, 616, 1064])
     else:
-        dummy_image = torch.randn([B, 3, 544, 1216]).cuda()
+        dummy_image = torch.randn([B, 3, 544, 1216])
 
     export_model = Metric3DExportModel(model)
     export_model.eval()
-    export_model.cuda()
+    export_model.cpu()
 
     onnx_output = f"{model_name}.onnx"
     dummy_input = (dummy_image,)
@@ -111,6 +112,21 @@ def main(model_name="metric3d_vit_small", modify_upsample=False):
         output_names=["pred_depth"],
         opset_version=11,
     )
+
+    # store normalization configuration
+    import onnx
+    import json
+    model_onnx = onnx.load(onnx_output)
+    meta_imagesize = model_onnx.metadata_props.add()
+    meta_imagesize.key = "ImageSize"
+    meta_imagesize.value = json.dumps([export_model.input_size[1], export_model.input_size[0]])
+    meta_normalization = model_onnx.metadata_props.add()
+    meta_normalization.key = "Normalization"
+    meta_normalization.value = json.dumps(dict(mean=[0, 0, 0], std=[1, 1, 1]))
+    meta_prediction_factor = model_onnx.metadata_props.add()
+    meta_prediction_factor.key = "PredictionFactor"
+    meta_prediction_factor.value = str(1)
+    onnx.save(model_onnx, onnx_output)
 
 
 if __name__ == "__main__":

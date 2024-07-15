@@ -24,7 +24,7 @@ class HDNRandomLoss(nn.Module):
         sample_max_d = np.random.uniform(sample_min_d + 0.1, 1-self.eps, self.random_num) * (max_d - min_d) + min_d
 
         mask_new = [(depth_gt >= sample_min_d[i]) & (depth_gt < sample_max_d[i] + 1e-30) & mask_valid for i in range(self.random_num)]
-        mask_new = torch.stack(mask_new, dim=0).cuda() #[N, 1, H, W]
+        mask_new = torch.stack(mask_new, dim=0).cpu() #[N, 1, H, W]
         return mask_new
 
     def ssi_mae(self, prediction, target, mask_valid):
@@ -96,8 +96,8 @@ class HDNRandomLoss(nn.Module):
     
 if __name__ == '__main__':
     ssil = HDNRandomLoss()
-    pred = torch.rand((2, 1, 256, 256)).cuda()
-    gt =  - torch.rand((2, 1, 256, 256)).cuda()#torch.zeros_like(pred).cuda() #
+    pred = torch.rand((2, 1, 256, 256)).cpu()
+    gt =  - torch.rand((2, 1, 256, 256)).cpu()#torch.zeros_like(pred).cpu() #
     gt[:, :, 100:256, 0:100] = -1
     mask = gt > 0
     out = ssil(pred, gt, mask)

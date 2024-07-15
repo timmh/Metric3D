@@ -17,7 +17,7 @@ def randomSamplingNormal(inputs, targets, masks, sample_num):
 
     # find A-B point pairs from prediction
     num_effect_pixels = torch.sum(masks)
-    shuffle_effect_pixels = torch.randperm(num_effect_pixels, device="cuda")
+    shuffle_effect_pixels = torch.randperm(num_effect_pixels, device="cpu")
     valid_inputs = inputs[:, masks]
     valid_targes = targets[:, masks]
     inputs_A = valid_inputs[:, shuffle_effect_pixels[0 : sample_num * 2 : 2]]
@@ -64,12 +64,12 @@ def edgeGuidedSampling(inputs, targets, edges_img, thetas_img, masks, h, w):
 
     # find anchor points (i.e, edge points)
     sample_num = minlen
-    index_anchors = torch.randint(0, minlen, (sample_num,), dtype=torch.long, device="cuda")
+    index_anchors = torch.randint(0, minlen, (sample_num,), dtype=torch.long, device="cpu")
     theta_anchors = torch.gather(thetas_edge, 0, index_anchors)
     row_anchors, col_anchors = ind2sub(edges_loc[index_anchors].squeeze(1), w)
     ## compute the coordinates of 4-points,  distances are from [2, 30]
-    distance_matrix = torch.randint(3, 20, (4, sample_num), device="cuda")
-    pos_or_neg = torch.ones(4, sample_num, device="cuda")
+    distance_matrix = torch.randint(3, 20, (4, sample_num), device="cpu")
+    pos_or_neg = torch.ones(4, sample_num, device="cpu")
     pos_or_neg[:2, :] = -pos_or_neg[:2, :]
     distance_matrix = distance_matrix.float() * pos_or_neg
     col = (
@@ -162,7 +162,7 @@ class EdgeguidedNormalLoss(nn.Module):
         # self.kernel = torch.tensor(
         #     np.array([[1, 1, 1], [1, 1, 1], [1, 1, 1]], dtype=np.float32),
         #     requires_grad=False,
-        # )[None, None, :, :].cuda()
+        # )[None, None, :, :].cpu()
         self.depth2normal = Depth2Normal()
         self.loss_weight = loss_weight
         self.data_type = data_type
@@ -172,13 +172,13 @@ class EdgeguidedNormalLoss(nn.Module):
     def getEdge(self, images):
         n, c, h, w = images.size()
         a = (
-            torch.tensor([[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]], dtype=torch.float32, device="cuda")
+            torch.tensor([[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]], dtype=torch.float32, device="cpu")
             .contiguous()
             .view((1, 1, 3, 3))
             .repeat(1, 1, 1, 1)
         )
         b = (
-            torch.tensor([[1, 2, 1], [0, 0, 0], [-1, -2, -1]], dtype=torch.float32, device="cuda")
+            torch.tensor([[1, 2, 1], [0, 0, 0], [-1, -2, -1]], dtype=torch.float32, device="cpu")
             .contiguous()
             .view((1, 1, 3, 3))
             .repeat(1, 1, 1, 1)
@@ -198,13 +198,13 @@ class EdgeguidedNormalLoss(nn.Module):
     def getNormalEdge(self, normals):
         n, c, h, w = normals.size()
         a = (
-            torch.Tensor([[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]], dtype=torch.float32, device="cuda")
+            torch.Tensor([[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]], dtype=torch.float32, device="cpu")
             .contiguous()
             .view((1, 1, 3, 3))
             .repeat(3, 1, 1, 1)
         )
         b = (
-            torch.Tensor([[1, 2, 1], [0, 0, 0], [-1, -2, -1]], dtype=torch.float32, device="cuda")
+            torch.Tensor([[1, 2, 1], [0, 0, 0], [-1, -2, -1]], dtype=torch.float32, device="cpu")
             .contiguous()
             .view((1, 1, 3, 3))
             .repeat(3, 1, 1, 1)
@@ -408,10 +408,10 @@ if __name__ == '__main__':
     imgs = np.random.randn(2, 3, 20, 22)
     intrinsics = np.stack([intrin, intrin], axis=0)
 
-    depth_t = torch.from_numpy(depth).cuda().float()
-    prediction = torch.from_numpy(prediction).cuda().float()
-    intrinsics = torch.from_numpy(intrinsics).cuda().float()
-    imgs = torch.from_numpy(imgs).cuda().float()
+    depth_t = torch.from_numpy(depth).cpu().float()
+    prediction = torch.from_numpy(prediction).cpu().float()
+    intrinsics = torch.from_numpy(intrinsics).cpu().float()
+    imgs = torch.from_numpy(imgs).cpu().float()
     depth_t = -1 * torch.abs(depth_t)
 
     loss = ENL(prediction, depth_t, masks=depth_t>0, images=imgs, intrinsic=intrinsics)

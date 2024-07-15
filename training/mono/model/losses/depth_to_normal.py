@@ -21,12 +21,12 @@ class Backprojection(nn.Module):
         # generate regular grid
         meshgrid = np.meshgrid(range(self.width), range(self.height), indexing='xy')
         id_coords = np.stack(meshgrid, axis=0).astype(np.float32)
-        id_coords = torch.tensor(id_coords, device="cuda")
+        id_coords = torch.tensor(id_coords, device="cpu")
 
         # generate homogeneous pixel coordinates
         # self.ones = nn.Parameter(torch.ones(1, 1, self.height * self.width),
         #                          requires_grad=False)
-        ones = torch.ones(1, 1, self.height * self.width, device="cuda")
+        ones = torch.ones(1, 1, self.height * self.width, device="cpu")
         xy = torch.unsqueeze(
             torch.stack([id_coords[0].view(-1), id_coords[1].view(-1)], 0),
             0
@@ -188,8 +188,8 @@ class Depth2Normal(nn.Module):
             height (int): image height
             width (int): image width
         """
-        y, x = torch.meshgrid([torch.arange(0, height, dtype=torch.float32, device="cuda"),
-                               torch.arange(0, width, dtype=torch.float32, device="cuda")], indexing='ij')
+        y, x = torch.meshgrid([torch.arange(0, height, dtype=torch.float32, device="cpu"),
+                               torch.arange(0, width, dtype=torch.float32, device="cpu")], indexing='ij')
         meshgrid = torch.stack((x, y))
         
         # # generate regular grid
@@ -198,7 +198,7 @@ class Depth2Normal(nn.Module):
         # id_coords = torch.tensor(id_coords)
 
         # generate homogeneous pixel coordinates
-        ones = torch.ones((1, 1, height * width), device="cuda")
+        ones = torch.ones((1, 1, height * width), device="cpu")
         # xy = torch.unsqueeze(
         #     torch.stack([x.reshape(-1), y.reshape(-1)], 0),
         #     0
@@ -237,18 +237,18 @@ class Depth2Normal(nn.Module):
     #     x_row = np.arange(0, W)
     #     x = np.tile(x_row, (H, 1))
     #     x = x.astype(np.float32)
-    #     x = torch.from_numpy(x.copy()).cuda()
+    #     x = torch.from_numpy(x.copy()).cpu()
     #     u_m_u0 = x[None, None, :, :] - u0
     #     self.register_buffer('u_m_u0', u_m_u0, persistent=False)
 
     #     y_col = np.arange(0, H)  # y_col = np.arange(0, height)
     #     y = np.tile(y_col, (W, 1)).T
     #     y = y.astype(np.float32)
-    #     y = torch.from_numpy(y.copy()).cuda()
+    #     y = torch.from_numpy(y.copy()).cpu()
     #     v_m_v0 = y[None, None, :, :] - v0
     #     self.register_buffer('v_m_v0', v_m_v0, persistent=False)
 
-    #     pix_idx_mat = torch.arange(H*W).reshape((H, W)).cuda()
+    #     pix_idx_mat = torch.arange(H*W).reshape((H, W)).cpu()
     #     self.register_buffer('pix_idx_mat', pix_idx_mat, persistent=False)
 
     #     x = self.u_m_u0 * depth / focal_length
@@ -295,8 +295,8 @@ if __name__ == '__main__':
     intrin = np.array([[300, 0, 10], [0, 300, 10], [0,0,1]])
     intrinsics = np.stack([intrin, intrin], axis=0)
 
-    depth_t = torch.from_numpy(depth).cuda().float()
-    intrinsics = torch.from_numpy(intrinsics).cuda().float()
+    depth_t = torch.from_numpy(depth).cpu().float()
+    intrinsics = torch.from_numpy(intrinsics).cpu().float()
     normal = d2n(depth_t, intrinsics)
     normal2 = d2n(depth_t, intrinsics)
     print(normal)

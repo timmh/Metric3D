@@ -1148,7 +1148,7 @@ class DinoWindowVisionTransformer(nn.Module):
         
         nh, nw = shape
         radius = (window_size-1)//2 
-        mask_ori = AP.local_2d_pattern(nh, nw, distance = radius + 0.1, p=torch.inf).cuda()
+        mask_ori = AP.local_2d_pattern(nh, nw, distance = radius + 0.1, p=torch.inf).cpu()
         
         pad = (8 - (nh * nw) % 8)
         if pad == 8:
@@ -1447,18 +1447,18 @@ if __name__ == '__main__':
     except:
         from mmengine import Config    
     
-    #rgb = torch.rand((2, 3, 518, 518)).cuda()
+    #rgb = torch.rand((2, 3, 518, 518)).cpu()
 
     #cfg.data_basic['crop_size']['0'] 
     #cfg.data_basic['crop_size']['1'] 
     cfg = Config.fromfile('mu.hu/monodepth/mono/configs/HourglassDecoder/pub12.convlarge.0.3_150.py')
 
-    #rgb = torch.arange(0, 2*3*1036*1036, 1).cuda().float().view(2, 3, 1036, 1036)
-    rgb = torch.zeros(1, 3, 1400, 1680).cuda()
-    model = vit_large(checkpoint="pretrained_weight_repo/vit/dinov2_vitl14_pretrain.pth", kwarg=cfg).cuda()
+    #rgb = torch.arange(0, 2*3*1036*1036, 1).cpu().float().view(2, 3, 1036, 1036)
+    rgb = torch.zeros(1, 3, 1400, 1680).cpu()
+    model = vit_large(checkpoint="pretrained_weight_repo/vit/dinov2_vitl14_pretrain.pth", kwarg=cfg).cpu()
 
     #import timm
-    #model2 = timm.models.vision_transformer.vit_large_patch14_dinov2().cuda()
+    #model2 = timm.models.vision_transformer.vit_large_patch14_dinov2().cpu()
     #timm.models.load_checkpoint(model2, '/cpfs02/shared/public/yvan/pretrained_weight_repo/vit/dinov2_vitl14_pretrain.pth', filter_fn=timm.models.vision_transformer.checkpoint_filter_fn)
 
     out1 = model(rgb)
@@ -1477,8 +1477,8 @@ if __name__ == '__main__':
 #     B, nh, nw, _, _ = shape
 #     radius = (window_size-1)//2 
 #     #time0 = time.time()
-#     d = AP.local_nd_distance(nh, nw, distance = radius + 0.1, p=torch.inf).cuda()
-#     #mask = AP.local_2d_pattern(nh, nw, distance = radius + 0.1, p=torch.inf).cuda()
+#     d = AP.local_nd_distance(nh, nw, distance = radius + 0.1, p=torch.inf).cpu()
+#     #mask = AP.local_2d_pattern(nh, nw, distance = radius + 0.1, p=torch.inf).cpu()
 #     # mask = mask.view(nh, nw, nh, nw)
 #     # #time1 = time.time() - time0
     

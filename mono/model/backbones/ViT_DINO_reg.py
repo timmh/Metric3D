@@ -1295,20 +1295,20 @@ if __name__ == '__main__':
     except:
         from mmengine import Config    
     
-    #rgb = torch.rand((2, 3, 518, 518)).cuda()
+    #rgb = torch.rand((2, 3, 518, 518)).cpu()
 
     #cfg.data_basic['crop_size']['0'] 
     #cfg.data_basic['crop_size']['1'] 
     cfg = Config.fromfile('/mu.hu/projects/monodepth_vit/mono/configs/RAFTDecoder/vit.raft5.large.kitti.py')
 
-    #rgb = torch.arange(0, 2*3*1036*1036, 1).cuda().float().view(2, 3, 1036, 1036)
-    rgb = torch.zeros(1, 3, 616, 1064).cuda()
+    #rgb = torch.arange(0, 2*3*1036*1036, 1).cpu().float().view(2, 3, 1036, 1036)
+    rgb = torch.zeros(1, 3, 616, 1064).cpu()
     cfg['tuning_mode'] = 'ssf' 
-    #model = vit_large_reg(checkpoint="/cpfs02/shared/public/groups/local_map/yvan/pretrained_weight_repo/vit/dinov2_vitl14_reg4_pretrain.pth", kwarg=cfg).cuda()
-    model = vit_large_reg(tuning_mode='ssf').cuda()
+    #model = vit_large_reg(checkpoint="/cpfs02/shared/public/groups/local_map/yvan/pretrained_weight_repo/vit/dinov2_vitl14_reg4_pretrain.pth", kwarg=cfg).cpu()
+    model = vit_large_reg(tuning_mode='ssf').cpu()
 
     #import timm
-    #model2 = timm.models.vision_transformer.vit_large_patch14_dinov2().cuda()
+    #model2 = timm.models.vision_transformer.vit_large_patch14_dinov2().cpu()
     #timm.models.load_checkpoint(model2, '/cpfs02/shared/public/yvan/pretrained_weight_repo/vit/dinov2_vitl14_pretrain.pth', filter_fn=timm.models.vision_transformer.checkpoint_filter_fn)
 
     out1 = model(rgb)

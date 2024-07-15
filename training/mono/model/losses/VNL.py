@@ -25,26 +25,26 @@ class VNLoss(nn.Module):
 
 
     def init_image_coor(self, intrinsic, height, width):
-        # x_row = torch.arange(0, W, device="cuda")
+        # x_row = torch.arange(0, W, device="cpu")
         # x = torch.tile(x_row, (H, 1))
         # x = x.to(torch.float32)
         # u_m_u0 = x[None, None, :, :] - u0
         # self.register_buffer('u_m_u0', u_m_u0, persistent=False)
 
-        # y_col = torch.arange(0, H, device="cuda")  # y_col = np.arange(0, height)
+        # y_col = torch.arange(0, H, device="cpu")  # y_col = np.arange(0, height)
         # y = torch.transpose(torch.tile(y_col, (W, 1)), 1, 0)
         # y = y.to(torch.float32)
         # v_m_v0 = y[None, None, :, :] - v0
         # self.register_buffer('v_m_v0', v_m_v0, persistent=False)
 
-        # pix_idx_mat = torch.arange(H*W, device="cuda").reshape((H, W))
+        # pix_idx_mat = torch.arange(H*W, device="cpu").reshape((H, W))
         # self.register_buffer('pix_idx_mat', pix_idx_mat, persistent=False)
-        #self.pix_idx_mat = torch.arange(height*width, device="cuda").reshape((height, width))
+        #self.pix_idx_mat = torch.arange(height*width, device="cpu").reshape((height, width))
         
         u0 = intrinsic[:, 0, 2][:, None, None, None]
         v0 = intrinsic[:, 1, 2][:, None, None, None]
-        y, x = torch.meshgrid([torch.arange(0, height, dtype=torch.float32, device="cuda"),
-                               torch.arange(0, width, dtype=torch.float32, device="cuda")], indexing='ij')
+        y, x = torch.meshgrid([torch.arange(0, height, dtype=torch.float32, device="cpu"),
+                               torch.arange(0, width, dtype=torch.float32, device="cpu")], indexing='ij')
         u_m_u0 = x[None, None, :, :] - u0
         v_m_v0 = y[None, None, :, :] - v0
         # return u_m_u0, v_m_v0
@@ -65,7 +65,7 @@ class VNLoss(nn.Module):
         p1 = []
         p2 = []
         p3 = []
-        pix_idx_mat = torch.arange(H*W, device="cuda").reshape((H, W))
+        pix_idx_mat = torch.arange(H*W, device="cpu").reshape((H, W))
         for i in range(B):
             inputs_index = torch.masked_select(pix_idx_mat, mask[i, ...].gt(self.eps))
             num_effect_pixels = len(inputs_index)
@@ -73,14 +73,14 @@ class VNLoss(nn.Module):
             intend_sample_num = int(H * W * self.sample_ratio)
             sample_num = intend_sample_num if num_effect_pixels >= intend_sample_num else num_effect_pixels
 
-            shuffle_effect_pixels = torch.randperm(num_effect_pixels, device="cuda")
+            shuffle_effect_pixels = torch.randperm(num_effect_pixels, device="cpu")
             p1i = inputs_index[shuffle_effect_pixels[:sample_num]]
-            shuffle_effect_pixels = torch.randperm(num_effect_pixels, device="cuda")
+            shuffle_effect_pixels = torch.randperm(num_effect_pixels, device="cpu")
             p2i = inputs_index[shuffle_effect_pixels[:sample_num]]
-            shuffle_effect_pixels = torch.randperm(num_effect_pixels, device="cuda")
+            shuffle_effect_pixels = torch.randperm(num_effect_pixels, device="cpu")
             p3i = inputs_index[shuffle_effect_pixels[:sample_num]]
 
-            cat_null = torch.tensor(([0,] * (intend_sample_num - sample_num)), dtype=torch.long, device="cuda")
+            cat_null = torch.tensor(([0,] * (intend_sample_num - sample_num)), dtype=torch.long, device="cpu")
             p1i = torch.cat([p1i, cat_null])
             p2i = torch.cat([p2i, cat_null])
             p3i = torch.cat([p3i, cat_null])
@@ -251,9 +251,9 @@ if __name__ == '__main__':
     pred_depth = np.random.random([2, 1, 480, 640])
     gt_depth = np.zeros_like(pred_depth) #np.random.random([2, 1, 480, 640])
     intrinsic = [[[100, 0, 200], [0, 100, 200], [0, 0, 1]], [[100, 0, 200], [0, 100, 200], [0, 0, 1]],]
-    gt_depth = torch.tensor(np.array(gt_depth, np.float32)).cuda()
-    pred_depth = torch.tensor(np.array(pred_depth, np.float32)).cuda()
-    intrinsic = torch.tensor(np.array(intrinsic, np.float32)).cuda()
+    gt_depth = torch.tensor(np.array(gt_depth, np.float32)).cpu()
+    pred_depth = torch.tensor(np.array(pred_depth, np.float32)).cpu()
+    intrinsic = torch.tensor(np.array(intrinsic, np.float32)).cpu()
     mask = gt_depth > 0
     loss1 = vnl_loss(pred_depth, gt_depth, mask, intrinsic)
     loss2 = vnl_loss(pred_depth, gt_depth, mask, intrinsic)

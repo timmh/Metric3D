@@ -2,7 +2,7 @@ torch == 2.0.1
 torchvision == 0.15.2
 opencv-python
 numpy == 1.23.1
-xformers == 0.0.21
+# xformers == 0.0.21  # incompatible with ONNX export
 Pillow
 DateTime
 matplotlib
@@ -14,3 +14,9 @@ imgaug
 iopath
 imagecorruptions
 mmcv
+
+# required for ONNX export
+fire==0.6.0
+onnx==1.16.1
+onnxruntime==1.18.1
+onnxscript==0.1.0.dev20240715

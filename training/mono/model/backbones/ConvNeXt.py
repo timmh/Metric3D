@@ -262,9 +262,9 @@ def convnext_xlarge(pretrained=True, in_22k=False, **kwargs):
 
 if __name__ == '__main__':
     import torch
-    model = convnext_base(True, in_22k=False).cuda()
+    model = convnext_base(True, in_22k=False).cpu()
 
-    rgb = torch.rand((2, 3, 256, 256)).cuda()
+    rgb = torch.rand((2, 3, 256, 256)).cpu()
     out = model(rgb)
     print(len(out))
     for i, ft in enumerate(out):

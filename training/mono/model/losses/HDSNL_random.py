@@ -36,7 +36,7 @@ class HDSNRandomLoss(nn.Module):
         crop_x_end = crop_width + crop_x
         crop_x_end[crop_x_end>=width] = width
 
-        mask_new = torch.zeros((self.random_num,  height, width), dtype=torch.bool, device="cuda") #.cuda() #[N, H, W]
+        mask_new = torch.zeros((self.random_num,  height, width), dtype=torch.bool, device="cpu") #.cpu() #[N, H, W]
         for i in range(self.random_num):
            mask_new[i, crop_y[i]:crop_y_end[i], crop_x[i]:crop_x_end[i]] = True
 
@@ -217,14 +217,14 @@ if __name__ == '__main__':
     torch.manual_seed(1)
     torch.cuda.manual_seed_all(1)
     ssil = HDSNRandomLoss()
-    pred = torch.rand((8, 1, 256, 512)).cuda()
-    gt = torch.rand((8, 1, 256, 512)).cuda()#torch.zeros_like(pred).cuda() #
+    pred = torch.rand((8, 1, 256, 512)).cpu()
+    gt = torch.rand((8, 1, 256, 512)).cpu()#torch.zeros_like(pred).cpu() #
     gt[1:, :, 100:256, 100:350] = -1
     gt[:2, ...] = -1
     mask = gt > 0
     sem_mask = np.random.randint(-1, 200, (8, 1, 256, 512))
     sem_mask[sem_mask>0] = -1
-    sem_mask_torch = torch.from_numpy(sem_mask).cuda()
+    sem_mask_torch = torch.from_numpy(sem_mask).cpu()
 
     out = ssil(pred, gt, mask, sem_mask_torch)
     print(out)

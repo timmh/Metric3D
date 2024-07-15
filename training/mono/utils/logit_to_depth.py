@@ -14,7 +14,7 @@ class SoftWeight(nn.Module):
 
     def forward(self, pred_logit):
         if type(pred_logit).__module__ != torch.__name__:
-            pred_logit = torch.tensor(pred_logit, dtype=torch.float32, device="cuda")
+            pred_logit = torch.tensor(pred_logit, dtype=torch.float32, device="cpu")
         pred_score = nn.functional.softmax(pred_logit, dim=1)
         pred_score_ch = pred_score.permute(0, 2, 3, 1) #[b, h, w, c]
         pred_score_weight = pred_score_ch * self.depth_bins_border
@@ -32,9 +32,9 @@ def soft_weight(pred_logit, depth_bins_border):
     Return: 1-channel depth, [b, 1, h, w]
     """
     if type(pred_logit).__module__ != torch.__name__:
-        pred_logit = torch.tensor(pred_logit, dtype=torch.float32, device="cuda")
+        pred_logit = torch.tensor(pred_logit, dtype=torch.float32, device="cpu")
     if type(depth_bins_border).__module__ != torch.__name__:
-        depth_bins_border = torch.tensor(depth_bins_border, dtype=torch.float32, device="cuda")
+        depth_bins_border = torch.tensor(depth_bins_border, dtype=torch.float32, device="cpu")
 
     pred_score = nn.functional.softmax(pred_logit, dim=1)
     depth_bins_ch = pred_score.permute(0, 2, 3, 1) #[b, h, w, c]    depth = torch.sum(depth, dim=3, dtype=torch.float32, keepdim=True)

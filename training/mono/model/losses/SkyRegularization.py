@@ -27,7 +27,7 @@ class SkyRegularizationLoss(nn.Module):
         return loss
 
     def loss_norm(self, pred_norm, sky_mask):
-        sky_norm = torch.FloatTensor(self.normal_regress).cuda()
+        sky_norm = torch.FloatTensor(self.normal_regress).cpu()
         sky_norm = sky_norm.unsqueeze(0).unsqueeze(2).unsqueeze(3)
         dot = torch.cosine_similarity(pred_norm[:, :3, :, :].clone(), sky_norm, dim=1)
 
@@ -71,9 +71,9 @@ if __name__ == '__main__':
     pred_depth = np.random.random([2, 1, 480, 640])
     gt_depth = np.zeros_like(pred_depth) #np.random.random([2, 1, 480, 640])
     intrinsic = [[[100, 0, 200], [0, 100, 200], [0, 0, 1]], [[100, 0, 200], [0, 100, 200], [0, 0, 1]],]
-    gt_depth = torch.tensor(np.array(gt_depth, np.float32)).cuda()
-    pred_depth = torch.tensor(np.array(pred_depth, np.float32)).cuda()
-    intrinsic = torch.tensor(np.array(intrinsic, np.float32)).cuda()
+    gt_depth = torch.tensor(np.array(gt_depth, np.float32)).cpu()
+    pred_depth = torch.tensor(np.array(pred_depth, np.float32)).cpu()
+    intrinsic = torch.tensor(np.array(intrinsic, np.float32)).cpu()
     mask = gt_depth > 0
     loss1 = sky(pred_depth, gt_depth, mask, mask, intrinsic)
     print(loss1)

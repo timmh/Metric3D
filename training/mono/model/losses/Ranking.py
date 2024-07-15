@@ -20,7 +20,7 @@ def randomSampling(predictions, targets, masks, threshold, sample_num):
     # find A-B point pairs from predictions
     inputs_index = torch.masked_select(predictions, targets.gt(threshold))
     num_effect_pixels = len(inputs_index)
-    shuffle_effect_pixels = torch.randperm(num_effect_pixels, device="cuda")
+    shuffle_effect_pixels = torch.randperm(num_effect_pixels, device="cpu")
     inputs_A = inputs_index[shuffle_effect_pixels[0:sample_num*2:2]]
     inputs_B = inputs_index[shuffle_effect_pixels[1:sample_num*2:2]]
     # find corresponding pairs from GT
@@ -70,13 +70,13 @@ def edgeGuidedSampling(predictions, targets, edges_img, thetas_img, masks, h, w)
 
     # find anchor points (i.e, edge points)
     sample_num = minlen
-    index_anchors = torch.randint(0, minlen, (sample_num,), dtype=torch.long, device="cuda")
+    index_anchors = torch.randint(0, minlen, (sample_num,), dtype=torch.long, device="cpu")
     anchors = torch.gather(inputs_edge, 0, index_anchors)
     theta_anchors = torch.gather(thetas_edge, 0, index_anchors)
     row_anchors, col_anchors = ind2sub(edges_loc[index_anchors].squeeze(1), w)
     ## compute the coordinates of 4-points,  distances are from [2, 30]
-    distance_matrix = torch.randint(2, 40, (4,sample_num), device="cuda")
-    pos_or_neg = torch.ones(4, sample_num, device="cuda")
+    distance_matrix = torch.randint(2, 40, (4,sample_num), device="cpu")
+    pos_or_neg = torch.ones(4, sample_num, device="cpu")
     pos_or_neg[:2,:] = -pos_or_neg[:2,:]
     distance_matrix = distance_matrix.float() * pos_or_neg
     col = col_anchors.unsqueeze(0).expand(4, sample_num).long() + torch.round(distance_matrix.float() * torch.abs(torch.cos(theta_anchors)).unsqueeze(0)).long()
@@ -147,7 +147,7 @@ class RankingLoss(nn.Module):
             target = target.contiguous().view(1, -1)#.double()
             mask = mask.contiguous().view(1, -1)#.double()
 
-        loss = 0.0 #torch.tensor([0.0]).cuda()
+        loss = 0.0 #torch.tensor([0.0]).cpu()
         valid_samples = 0
         for i in range(n):
             # find A-B point pairs
@@ -195,8 +195,8 @@ class EdgeguidedRankingLoss(nn.Module):
 
     def getEdge(self, images):
         n,c,h,w = images.size()
-        a = torch.tensor([[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]], dtype=torch.float32, device="cuda").view((1,1,3,3)).repeat(1, 1, 1, 1)
-        b = torch.tensor([[1, 2, 1], [0, 0, 0], [-1, -2, -1]], dtype=torch.float32, device="cuda").view((1,1,3,3)).repeat(1, 1, 1, 1)
+        a = torch.tensor([[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]], dtype=torch.float32, device="cpu").view((1,1,3,3)).repeat(1, 1, 1, 1)
+        b = torch.tensor([[1, 2, 1], [0, 0, 0], [-1, -2, -1]], dtype=torch.float32, device="cpu").view((1,1,3,3)).repeat(1, 1, 1, 1)
         if c == 3:
             gradient_x = F.conv2d(images[:,0,:,:].unsqueeze(1), a)
             gradient_y = F.conv2d(images[:,0,:,:].unsqueeze(1), b)
@@ -260,7 +260,7 @@ class EdgeguidedRankingLoss(nn.Module):
             thetas_depth = thetas_depth.view(1, -1)#.double()
 
         # initialization
-        loss = 0.0 #torch.tensor([0.0]).cuda()
+        loss = 0.0 #torch.tensor([0.0]).cpu()
         valid_samples = 0
 
         for i in range(n):
@@ -334,9 +334,9 @@ if __name__ == '__main__':
     # gt_depth = cv2.imread('/hardware/yifanliu/SUNRGBD/sunrgbd-meta-data/sunrgbd_test_depth/2.png', -1)
     # gt_depth = gt_depth[None, :, :, None]
     # pred_depth = gt_depth[:, :, ::-1, :]
-    gt_depth = torch.tensor(np.asarray(gt_depth, np.float32)).cuda()
-    pred_depth = torch.tensor(np.asarray(pred_depth, np.float32)).cuda()
+    gt_depth = torch.tensor(np.asarray(gt_depth, np.float32)).cpu()
+    pred_depth = torch.tensor(np.asarray(pred_depth, np.float32)).cpu()
     input = np.random.randn(2, 3, 480, 640)
-    input_torch = torch.tensor(np.asarray(input, np.float32)).cuda()
+    input_torch = torch.tensor(np.asarray(input, np.float32)).cpu()
     loss = rank_loss(gt_depth, gt_depth, gt_depth>0, input=input_torch)
     print(loss)

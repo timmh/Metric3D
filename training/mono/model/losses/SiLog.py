@@ -31,8 +31,8 @@ class SilogLoss(nn.Module):
       
 if __name__ == '__main__':
     silog = SilogLoss()
-    pred = torch.rand((2, 3, 256, 256)).cuda()
-    gt =  torch.zeros_like(pred) #torch.rand((2, 3, 256, 256)).cuda()
+    pred = torch.rand((2, 3, 256, 256)).cpu()
+    gt =  torch.zeros_like(pred) #torch.rand((2, 3, 256, 256)).cpu()
     mask = gt > 0
     out = silog(pred, gt, mask)
     print(out)

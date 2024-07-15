@@ -5,7 +5,7 @@ import numpy as np
 
 from mono.utils.inverse_warp import inverse_warp2
 
-#device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
+#device = torch.device("cpu") if torch.cuda.is_available() else torch.device("cpu")
 
 
 class SSIM(nn.Module):

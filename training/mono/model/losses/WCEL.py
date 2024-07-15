@@ -31,7 +31,7 @@ class WCELoss(nn.Module):
         # bins_edges_in_log = np.array([self.depth_min_log + self.depth_bins_interval * (i + 0.5)
         #                         for i in range(self.bins_num)])
         bins_weight = torch.tensor([[np.exp(-self.alpha * (i - j) ** 2) for i in range(self.bins_num )]
-                            for j in np.arange(self.bins_num )]).cuda()
+                            for j in np.arange(self.bins_num )]).cpu()
         self.register_buffer("bins_weight", bins_weight.float(), persistent=False)
         self.register_buffer("bins_edges_in_log", bins_edges_in_log.float(), persistent=False)
 
@@ -145,10 +145,10 @@ if __name__ == '__main__':
     pred_logit = np.random.random([2, 200, 480, 640])
     gt_depth = np.random.random([2, 1, 480, 640]) - 0.5 #np.zeros_like(pred_depth) #
     intrinsic = [[100, 100, 200, 200], [200, 200, 300, 300]]
-    gt_depth = torch.tensor(np.array(gt_depth, np.float32)).cuda()
-    pred_depth = torch.tensor(np.array(pred_depth, np.float32)).cuda()
-    intrinsic = torch.tensor(np.array(intrinsic, np.float32)).cuda()
-    pred_logit = torch.tensor(np.array(pred_logit, np.float32)).cuda()
+    gt_depth = torch.tensor(np.array(gt_depth, np.float32)).cpu()
+    pred_depth = torch.tensor(np.array(pred_depth, np.float32)).cpu()
+    intrinsic = torch.tensor(np.array(intrinsic, np.float32)).cpu()
+    pred_logit = torch.tensor(np.array(pred_logit, np.float32)).cpu()
 
 
     mask = gt_depth > 0

@@ -21,7 +21,7 @@ class HDSNLoss(nn.Module):
         for anchor in anchor_power:  # e.g. 1/8
             for h in range(int(1 / anchor)):
                 for w in range(int(1 / anchor)):
-                    mask_new = torch.zeros((batch,  1, height, width), dtype=torch.bool).cuda()
+                    mask_new = torch.zeros((batch,  1, height, width), dtype=torch.bool).cpu()
                     mask_new[:, :, int(h * anchor * height):int((h + 1) * anchor * height),
                         int(w * anchor * width):int((w + 1) * anchor * width)] = True
                     mask_new = mask & mask_new
@@ -74,8 +74,8 @@ if __name__ == '__main__':
     torch.manual_seed(1)
     torch.cuda.manual_seed_all(1)
     ssil = HDSNLoss()
-    pred = torch.rand((2, 1, 256, 256)).cuda()
-    gt = torch.rand((2, 1, 256, 256)).cuda()#torch.zeros_like(pred).cuda() #
+    pred = torch.rand((2, 1, 256, 256)).cpu()
+    gt = torch.rand((2, 1, 256, 256)).cpu()#torch.zeros_like(pred).cpu() #
     gt[:, :, 100:256, 0:100] = -1
     mask = gt > 0
     out = ssil(pred, gt, mask)

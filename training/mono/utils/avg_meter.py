@@ -552,8 +552,8 @@ if __name__ == '__main__':
     gt_depth = np.random.random([2, 480, 640]) - 0.5 #np.ones_like(pred_depth) * (-1) #
     intrinsic = [[100, 100, 200, 200], [200, 200, 300, 300]]
 
-    pred = torch.from_numpy(pred_depth).cuda()
-    gt = torch.from_numpy(gt_depth).cuda()
+    pred = torch.from_numpy(pred_depth).cpu()
+    gt = torch.from_numpy(gt_depth).cpu()
 
     mask = gt > 0
     dam.update_metrics_gpu(pred, pred, mask, False)

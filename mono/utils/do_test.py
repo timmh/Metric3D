@@ -166,8 +166,8 @@ def transform_test_data_scalecano(rgb, intrinsic, data_basic):
     """
     canonical_space = data_basic['canonical_space']
     forward_size = data_basic.crop_size
-    mean = torch.tensor([123.675, 116.28, 103.53]).float()[:, None, None]
-    std = torch.tensor([58.395, 57.12, 57.375]).float()[:, None, None]
+    mean = torch.tensor([123.675, 116.28, 103.53]).float()[:, None, None].cpu()
+    std = torch.tensor([58.395, 57.12, 57.375]).float()[:, None, None].cpu()
 
     # BGR to RGB
     #rgb = cv2.cvtColor(rgb, cv2.COLOR_BGR2RGB)
@@ -193,10 +193,10 @@ def transform_test_data_scalecano(rgb, intrinsic, data_basic):
 
     rgb = torch.from_numpy(rgb.transpose((2, 0, 1))).float()
     rgb = torch.div((rgb - mean), std)
-    rgb = rgb.cuda()
+    rgb = rgb.cpu()
     
     cam_model = torch.from_numpy(cam_model.transpose((2, 0, 1))).float()
-    cam_model = cam_model[None, :, :, :].cuda()
+    cam_model = cam_model[None, :, :, :].cpu()
     cam_model_stacks = [
         torch.nn.functional.interpolate(cam_model, size=(cam_model.shape[2]//i, cam_model.shape[3]//i), mode='bilinear', align_corners=False)
         for i in [2, 4, 8, 16, 32]
@@ -311,7 +311,7 @@ def postprocess_per_image(i, pred_depth, gt_depth, intrinsic, rgb_origin, normal
 
         pred_depth = torch.nn.functional.interpolate(pred_depth[None, None, :, :], (gt_depth.shape[0], gt_depth.shape[1]), mode='bilinear').squeeze() # to original size
 
-        gt_depth = torch.from_numpy(gt_depth).cuda()
+        gt_depth = torch.from_numpy(gt_depth).cpu()
 
         pred_depth_median = pred_depth * gt_depth[gt_depth != 0].median() / pred_depth[gt_depth != 0].median()
         pred_global, _ = align_scale_shift(pred_depth, gt_depth)

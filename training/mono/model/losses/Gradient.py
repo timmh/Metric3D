@@ -113,8 +113,8 @@ if __name__ == '__main__':
     #gt_depth = np.abs(gt_depth)
     intrinsic = [[100, 100, 200, 200], [200, 200, 300, 300]]
 
-    pred = torch.from_numpy(pred_depth).cuda()
-    gt = torch.from_numpy(gt_depth).cuda()
+    pred = torch.from_numpy(pred_depth).cpu()
+    gt = torch.from_numpy(gt_depth).cpu()
     mask = gt > 0
 
     loss = gradient(gt, gt, mask)

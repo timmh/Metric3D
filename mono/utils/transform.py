@@ -52,23 +52,23 @@ class ToTensor(object):
         for i, img in enumerate(images):
             if len(img.shape) == 2:
                 img = np.expand_dims(img, axis=2)
-            images[i] = torch.from_numpy(img.transpose((2, 0, 1))).float()
+            images[i] = torch.from_numpy(img.transpose((2, 0, 1))).float().cpu()
         for i, lab in enumerate(labels):
             if len(lab.shape) == 2:
                 lab = np.expand_dims(lab, axis=0)
-            labels[i] = torch.from_numpy(lab).float()
+            labels[i] = torch.from_numpy(lab).float().cpu()
         for i, intrinsic in enumerate(intrinsics):
             if len(intrinsic) == 3:
                 intrinsic = [intrinsic[0],] + intrinsic
-            intrinsics[i] = torch.tensor(intrinsic, dtype=torch.float)
+            intrinsics[i] = torch.tensor(intrinsic, dtype=torch.float).cpu()
         if cam_models is not None:
             for i, cam_model in enumerate(cam_models):
-                cam_models[i] = torch.from_numpy(cam_model.transpose((2, 0, 1))).float() if cam_model is not None else None
+                cam_models[i] = torch.from_numpy(cam_model.transpose((2, 0, 1))).float().cpu() if cam_model is not None else None
         if other_labels is not None:
             for i, lab in enumerate(other_labels):
                 if len(lab.shape) == 2:
                     lab = np.expand_dims(lab, axis=0)
-                other_labels[i] = torch.from_numpy(lab).float()
+                other_labels[i] = torch.from_numpy(lab).float().cpu()
         return images, labels, intrinsics, cam_models, other_labels, transform_paras
 
 
@@ -79,9 +79,9 @@ class Normalize(object):
             assert len(mean) > 0
         else:
             assert len(mean) == len(std)
-        self.mean = torch.tensor(mean).float()[:, None, None]
-        self.std = torch.tensor(std).float()[:, None, None] if std is not None \
-            else torch.tensor([1.0, 1.0, 1.0]).float()[:, None, None]
+        self.mean = torch.tensor(mean).float()[:, None, None].cpu()
+        self.std = torch.tensor(std).float()[:, None, None].cpu() if std is not None \
+            else torch.tensor([1.0, 1.0, 1.0]).float()[:, None, None].cpu()
 
     def __call__(self, images, labels, intrinsics, cam_models=None, other_labels=None, transform_paras=None):
         # if self.std is None:

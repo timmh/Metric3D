@@ -176,7 +176,7 @@ class BaseDepthModel(nn.Module):
     
     def create_mask_as_loss(self, loss_method, mask, batches_data_type):
         data_type_req = np.array(loss_method.data_type)[:, None]
-        batch_mask = torch.tensor(np.any(data_type_req == batches_data_type, axis=0), device="cuda") #torch.from_numpy(np.any(data_type_req == batches_data_type, axis=0)).cuda()
+        batch_mask = torch.tensor(np.any(data_type_req == batches_data_type, axis=0), device="cpu") #torch.from_numpy(np.any(data_type_req == batches_data_type, axis=0)).cpu()
         new_mask = mask * batch_mask[:, None, None, None]
         return new_mask
     

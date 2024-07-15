@@ -133,12 +133,12 @@ def main_worker(local_rank: int, cfg: dict, launcher: str, test_data: list):
     
     # config distributed training
     if cfg.distributed:
-        model = torch.nn.parallel.DistributedDataParallel(model.cuda(),
+        model = torch.nn.parallel.DistributedDataParallel(model.cpu(),
                                                           device_ids=[local_rank],
                                                           output_device=local_rank,
                                                           find_unused_parameters=True)
     else:
-        model = torch.nn.DataParallel(model).cuda()
+        model = torch.nn.DataParallel(model).cpu()
         
     # load ckpt
     model, _,  _, _ = load_ckpt(cfg.load_from, model, strict_match=False)

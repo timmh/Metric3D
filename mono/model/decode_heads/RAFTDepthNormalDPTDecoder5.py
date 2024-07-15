@@ -792,7 +792,7 @@ class RAFTDepthNormalDPT5(nn.Module):
         self.relu = nn.ReLU(inplace=True)
     
     def get_bins(self, bins_num):
-        depth_bins_vec = torch.linspace(math.log(self.min_val), math.log(self.max_val), bins_num, device="cuda")
+        depth_bins_vec = torch.linspace(math.log(self.min_val), math.log(self.max_val), bins_num, device="cpu")
         depth_bins_vec = torch.exp(depth_bins_vec)
         return depth_bins_vec
     
@@ -847,7 +847,7 @@ class RAFTDepthNormalDPT5(nn.Module):
         return norm_normalize(torch.cat([normal_out, confidence], dim=1))
         #return norm_normalize(torch.cat([normal_out, confidence], dim=1).float())
     
-    def create_mesh_grid(self, height, width, batch, device="cuda", set_buffer=True):
+    def create_mesh_grid(self, height, width, batch, device="cpu", set_buffer=True):
         y, x = torch.meshgrid([torch.arange(0, height, dtype=torch.float32, device=device),
                                torch.arange(0, width, dtype=torch.float32, device=device)], indexing='ij')
         meshgrid = torch.stack((x, y))
@@ -1012,19 +1012,19 @@ if __name__ == "__main__":
     cfg.model.decode_head.up_scale = 7
     
     # cfg.model.decode_head.use_cls_token = True
-    # vit_feature = [[torch.rand((2, 20, 60, 384)).cuda(), torch.rand(2, 384).cuda()], \
-    #         [torch.rand((2, 20, 60, 384)).cuda(), torch.rand(2, 384).cuda()], \
-    #         [torch.rand((2, 20, 60, 384)).cuda(), torch.rand(2, 384).cuda()], \
-    #         [torch.rand((2, 20, 60, 384)).cuda(), torch.rand(2, 384).cuda()]]
+    # vit_feature = [[torch.rand((2, 20, 60, 384)).cpu(), torch.rand(2, 384).cpu()], \
+    #         [torch.rand((2, 20, 60, 384)).cpu(), torch.rand(2, 384).cpu()], \
+    #         [torch.rand((2, 20, 60, 384)).cpu(), torch.rand(2, 384).cpu()], \
+    #         [torch.rand((2, 20, 60, 384)).cpu(), torch.rand(2, 384).cpu()]]
     
     cfg.model.decode_head.use_cls_token = True
     cfg.model.decode_head.num_register_tokens = 4
-    vit_feature = [[torch.rand((2, (74 * 74) + 5, 384)).cuda(),\
-                    torch.rand((2, (74 * 74) + 5, 384)).cuda(), \
-                    torch.rand((2, (74 * 74) + 5, 384)).cuda(), \
-                    torch.rand((2, (74 * 74) + 5, 384)).cuda()], (2, 74, 74, 1036, 1036, 4)]
+    vit_feature = [[torch.rand((2, (74 * 74) + 5, 384)).cpu(),\
+                    torch.rand((2, (74 * 74) + 5, 384)).cpu(), \
+                    torch.rand((2, (74 * 74) + 5, 384)).cpu(), \
+                    torch.rand((2, (74 * 74) + 5, 384)).cpu()], (2, 74, 74, 1036, 1036, 4)]
 
-    decoder = RAFTDepthNormalDPT5(cfg).cuda()
+    decoder = RAFTDepthNormalDPT5(cfg).cpu()
     output = decoder(vit_feature)
     temp = 1
 

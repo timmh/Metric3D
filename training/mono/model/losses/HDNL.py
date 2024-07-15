@@ -87,8 +87,8 @@ class HDNLoss(nn.Module):
     
 if __name__ == '__main__':
     ssil = HDNLoss()
-    pred = torch.rand((2, 1, 256, 256)).cuda()
-    gt = torch.rand((2, 1, 256, 256)).cuda()#torch.zeros_like(pred).cuda() #
+    pred = torch.rand((2, 1, 256, 256)).cpu()
+    gt = torch.rand((2, 1, 256, 256)).cpu()#torch.zeros_like(pred).cpu() #
     gt[:, :, 100:256, 0:100] = -1
     mask = gt > 0
     out = ssil(pred, gt, mask)

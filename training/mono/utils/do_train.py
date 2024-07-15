@@ -87,12 +87,12 @@ def do_train(local_rank: int, cfg: dict):
     # config distributed training
     if cfg.distributed:
         model = torch.nn.SyncBatchNorm.convert_sync_batchnorm(model)
-        model = torch.nn.parallel.DistributedDataParallel(model.cuda(), 
+        model = torch.nn.parallel.DistributedDataParallel(model.cpu(), 
                                                           device_ids=[local_rank], 
                                                           output_device=local_rank, 
                                                           find_unused_parameters=False)
     else:
-        model = torch.nn.DataParallel(model.cuda())
+        model = torch.nn.DataParallel(model.cpu())
     
     # init automatic mix precision training
     # if 'AMP' in cfg.runner.type:

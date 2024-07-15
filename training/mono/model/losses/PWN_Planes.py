@@ -28,9 +28,9 @@ class PWNPlanesLoss(nn.Module):
         self.data_type = data_type
     
     def init_image_coor(self, B, H, W):
-        u = torch.arange(0, H, dtype=torch.float32, device="cuda").contiguous().view(1, H, 1).expand(1, H, W) # [1, H, W]
-        v = torch.arange(0, W, dtype=torch.float32, device="cuda").contiguous().view(1, 1, W).expand(1, H, W)  # [1, H, W]
-        ones = torch.ones((1, H, W), dtype=torch.float32, device="cuda")
+        u = torch.arange(0, H, dtype=torch.float32, device="cpu").contiguous().view(1, H, 1).expand(1, H, W) # [1, H, W]
+        v = torch.arange(0, W, dtype=torch.float32, device="cpu").contiguous().view(1, 1, W).expand(1, H, W)  # [1, H, W]
+        ones = torch.ones((1, H, W), dtype=torch.float32, device="cpu")
         pixel_coords = torch.stack((u, v, ones), dim=1).expand(B, 3, H, W)  # [B, 3, H, W]
         # self.register_buffer('uv', pixel_coords, persistent=False)
         self.uv = pixel_coords
@@ -76,7 +76,7 @@ class PWNPlanesLoss(nn.Module):
         p2_y = []
         p3_x = []
         p3_y = []
-        valid_batch = torch.ones((x, 1), dtype=torch.bool, device="cuda")
+        valid_batch = torch.ones((x, 1), dtype=torch.bool, device="cpu")
         for i in range(x):
             mask_kp_i = mask_kp[i, 0, :, :]
             valid_points = torch.nonzero(mask_kp_i)
@@ -85,7 +85,7 @@ class PWNPlanesLoss(nn.Module):
                 valid_points = torch.nonzero(~mask_kp_i.to(torch.uint8))
                 valid_batch[i, :] = False
             elif valid_points.shape[0] < select_size:
-                repeat_idx = torch.randperm(valid_points.shape[0], device="cuda")[:select_size - valid_points.shape[0]]
+                repeat_idx = torch.randperm(valid_points.shape[0], device="cpu")[:select_size - valid_points.shape[0]]
                 valid_repeat = valid_points[repeat_idx]
                 valid_points = torch.cat((valid_points, valid_repeat), 0)
             else:
@@ -96,7 +96,7 @@ class PWNPlanesLoss(nn.Module):
                 valid_points = torch.nonzero(~mask_kp_i.to(torch.uint8))
                 valid_batch[i, :] = False
             """
-            select_indx = torch.randperm(valid_points.size(0), device="cuda")
+            select_indx = torch.randperm(valid_points.size(0), device="cpu")
 
             p1 = valid_points[select_indx[0:select_size:3]]
             p2 = valid_points[select_indx[1:select_size:3]]
@@ -129,7 +129,7 @@ class PWNPlanesLoss(nn.Module):
         p2_y = p123['p2_y']
         p3_x = p123['p3_x']
         p3_y = p123['p3_y']
-        batch_list = torch.arange(0, p1_x.shape[0], device="cuda")[:, None]
+        batch_list = torch.arange(0, p1_x.shape[0], device="cpu")[:, None]
         pw = pw.repeat((p1_x.shape[0], 1, 1, 1))
         pw1 = pw[batch_list, p1_y, p1_x, :]
         pw2 = pw[batch_list, p2_y, p2_x, :]
@@ -221,7 +221,7 @@ class PWNPlanesLoss(nn.Module):
             ins_planes_mask = ins_planes_mask[None, ...]
         
         B, _, H, W = pred_depth.shape
-        loss_sum = torch.tensor(0.0, device="cuda")
+        loss_sum = torch.tensor(0.0, device="cpu")
         valid_planes_num = 0
 
         #if 'uv' not in self._buffers or ('uv' in self._buffers and self.uv.shape[0] != B):
@@ -275,8 +275,8 @@ class PWNPlanesLoss(nn.Module):
 if __name__ == '__main__':
     import cv2
     vnl_loss = PWNPlanesLoss()
-    pred_depth = torch.rand([2, 1, 385, 513]).cuda()
-    gt_depth = torch.rand([2, 1, 385, 513]).cuda()
+    pred_depth = torch.rand([2, 1, 385, 513]).cpu()
+    gt_depth = torch.rand([2, 1, 385, 513]).cpu()
     gt_depth[:, :, 3:20, 40:60] = 0
     mask_kp1 = pred_depth > 0.9
     mask_kp2 = pred_depth < 0.5
@@ -285,7 +285,7 @@ if __name__ == '__main__':
     mask[1,...] = 0
 
 
-    intrinsic = torch.tensor([[100, 0, 50], [0, 100, 50,], [0,0,1]]).cuda().float()
+    intrinsic = torch.tensor([[100, 0, 50], [0, 100, 50,], [0,0,1]]).cpu().float()
     intrins = torch.stack([intrinsic, intrinsic], dim=0)
     loss = vnl_loss(gt_depth, gt_depth, mask, intrins, dataset=np.array(['Taskonomy', 'Taskonomy']))
     print(loss)

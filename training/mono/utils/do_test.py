@@ -95,7 +95,7 @@ def get_prediction(
         output['prediction'] = 0.5 * (output['prediction'] + torch.flip(output_flip['prediction'], [3]))
         output['confidence'] = 0.5 * (output['confidence'] + torch.flip(output_flip['confidence'], [3]))
 
-    output['pad'] = torch.Tensor(pad_info).cuda().unsqueeze(0).int()
+    output['pad'] = torch.Tensor(pad_info).cpu().unsqueeze(0).int()
     output['mask'] = torch.ones_like(pred_depth).bool().unsqueeze(0).unsqueeze(1)
     output['scale_info'] = scale_info 
     if intrinsic is not None:
